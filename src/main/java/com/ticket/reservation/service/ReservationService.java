@@ -42,7 +42,7 @@ public class ReservationService {
 	    Schedule schedule = scheduleRepository.findById(req.getScheduleId())
 	            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 Schedule Id 입니다."));
 
-	    Seat seat = seatRepository.findById(req.getSeatId())
+	    Seat seat = seatRepository.findWithLockById(req.getSeatId())
 	            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 Seat Id 입니다."));
 
 	    if (!seat.getSchedule().getId().equals(schedule.getId())) {

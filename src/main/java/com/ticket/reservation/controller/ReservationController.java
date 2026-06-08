@@ -3,10 +3,7 @@ package com.ticket.reservation.controller;
 import org.apache.coyote.BadRequestException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.ticket.reservation.dto.MakeReservationRequest;
 import com.ticket.reservation.service.ReservationService;
@@ -21,9 +18,13 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ReservationController {
 	private final ReservationService reservationService;
-	
+
+//	=============================================================================
+//	기존 : public ResponseEntity<Long> makeReservation(@Valid @RequestBody MakeReservationRequest req)
+//	현재 :
+//	=============================================================================
 	@PostMapping
-	public ResponseEntity<Long> makeReservation(@Valid @RequestBody MakeReservationRequest req)
+	public ResponseEntity<Long> makeReservation(@RequestHeader("User-Id") Long userId, @RequestParam("scheduleId") Long scheduleId, @Valid @RequestBody MakeReservationRequest req)
 	        throws BadRequestException {
 
 	    log.info("POST /reservations 요청. userId={}, scheduleId={}, seatId={}",

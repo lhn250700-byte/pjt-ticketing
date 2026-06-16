@@ -2,14 +2,11 @@ package com.ticket.concert.controller;
 
 import java.util.List;
 
-import com.ticket.concert.dto.ConcertDetailResponse;
-import com.ticket.concert.dto.CursorResponse;
+import com.ticket.concert.dto.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.ticket.concert.dto.ConcertCreate;
-import com.ticket.concert.dto.ConcertResponse;
 import com.ticket.concert.service.ConcertService;
 
 import jakarta.validation.Valid;
@@ -60,5 +57,18 @@ public class ConcertController {
 	@GetMapping("/{concertId}")
 	public ResponseEntity<ConcertDetailResponse> getConcert(@PathVariable Long concertId) {
 		return ResponseEntity.ok(concertService.getConcert(concertId));
+	}
+
+	// 수정
+	@PatchMapping("/{concertId}")
+	public ResponseEntity<ConcertResponse> updateConcert(@PathVariable Long concertId, @RequestBody ConcertUpdate req) {
+		return ResponseEntity.ok(concertService.updateConcert(concertId, req));
+	}
+
+	// 삭제
+	@DeleteMapping("/{concertId}")
+	public ResponseEntity<String> deleteConcert(@PathVariable Long concertId) {
+		concertService.deleteConcert(concertId);
+		return ResponseEntity.ok(concertId + " 삭제 완료");
 	}
 }

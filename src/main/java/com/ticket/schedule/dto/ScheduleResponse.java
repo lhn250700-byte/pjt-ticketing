@@ -1,12 +1,15 @@
 package com.ticket.schedule.dto;
 
 import com.ticket.schedule.domain.Schedule;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
 @Getter
+@NoArgsConstructor
 public class ScheduleResponse {
     private Long scheduleId;
     private LocalDateTime bookOpenTime;

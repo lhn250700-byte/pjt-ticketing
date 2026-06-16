@@ -1,18 +1,20 @@
 package com.ticket.concert.service;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
 
-import com.ticket.concert.dto.ConcertDetailResponse;
-import com.ticket.concert.dto.CursorResponse;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ticket.concert.dto.*;
 import com.ticket.schedule.dto.ScheduleResponse;
 import com.ticket.schedule.repository.ScheduleRepository;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.ticket.concert.domain.Concert;
-import com.ticket.concert.dto.ConcertCreate;
-import com.ticket.concert.dto.ConcertResponse;
 import com.ticket.concert.repository.ConcertRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -25,7 +27,9 @@ import lombok.extern.slf4j.Slf4j;
 public class ConcertService {
 	private final ConcertRepository concertRepository;
 	private final ScheduleRepository scheduleRepository;
-	
+	private final StringRedisTemplate redisTemplate;
+	private final ObjectMapper objectMapper;
+
 	@Transactional
 	public Long createConcert(ConcertCreate req) {
 
@@ -74,6 +78,18 @@ public class ConcertService {
 
 	// GET /concerts/{concertId}
 	public ConcertDetailResponse getConcert(Long concertId) {
+		String concertKey = "concert:" + concertId;
+		String cachedData = redisTemplate.opsForValue().get(concertKey);
+
+		if (cachedData != null) {
+			try {
+				return objectMapper.readValue(cachedData, ConcertDetailResponse.class);
+			} catch (Exception e) {
+				log.error("[Concert] 캐시 데이터 가져오기 실패", e);
+				redisTemplate.delete(concertKey);
+			}
+		}
+
 		Concert concert = concertRepository.findById(concertId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 콘서트입니다."));
 
 		List<ScheduleResponse> schedules = scheduleRepository.findByConcertIdOrderByStartAsc(concertId)
@@ -81,6 +97,47 @@ public class ConcertService {
 				.map(ScheduleResponse::from)
 				.toList();
 
-		return ConcertDetailResponse.from(concert, schedules);
+		ConcertDetailResponse response = ConcertDetailResponse.from(concert, schedules);
+
+		// redis 저장
+        try {
+            redisTemplate.opsForValue().set(concertKey, objectMapper.writeValueAsString(response), Duration.ofMinutes(10));
+        } catch (JsonProcessingException e) {
+            log.error("[Concert] 캐싱 실패", e);
+        }
+
+        return response;
+	}
+
+	// PATCH /concerts/{concertId}
+	@Transactional
+	public ConcertResponse updateConcert(Long concertId, ConcertUpdate req) {
+		Concert concert = concertRepository.findById(concertId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 콘서트입니다."));
+		concert.update(req.getTitle(), req.getDescription(), req.getVenue(), req.getRuntime());
+		Concert savedConcert = concertRepository.save(concert);
+		String concertKey = "concert:" + concertId;
+		String cachedData = redisTemplate.opsForValue().get(concertKey);
+
+		ConcertResponse response = ConcertResponse.from(savedConcert);
+
+		if (cachedData != null) {
+            try {
+				redisTemplate.delete(concertKey);
+                redisTemplate.opsForValue().set(concertKey, objectMapper.writeValueAsString(response), Duration.ofMinutes(10));
+            } catch (JsonProcessingException e) {
+				log.error("[Concert] 캐싱 실패", e);
+            }
+        }
+
+		return response;
+	}
+
+	@Transactional
+	public void deleteConcert(Long concertId) {
+		Concert concert = concertRepository.findById(concertId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 콘서트입니다."));
+		String concertKey = "concert:" + concertId;
+		String cachedData = redisTemplate.opsForValue().get(concertKey);
+		concertRepository.delete(concert);
+		if (cachedData != null) redisTemplate.delete(concertKey);
 	}
 }

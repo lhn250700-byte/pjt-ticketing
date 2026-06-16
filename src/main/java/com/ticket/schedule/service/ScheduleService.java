@@ -1,8 +1,13 @@
 package com.ticket.schedule.service;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ticket.schedule.dto.ScheduleResponse;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +31,8 @@ public class ScheduleService {
 	private final ScheduleRepository scheduleRepository;
 	private final ConcertRepository concertRepository;
 	private final SeatRepository seatRepository;
+	private final StringRedisTemplate redisTemplate;
+	private final ObjectMapper objectMapper;
 	
 	@Transactional
 	public Long createSchedule(ScheduleCreateRequest req) {
@@ -78,5 +85,41 @@ public class ScheduleService {
 	            newSchedule.getId(), seatList.size());
 
 	    return newSchedule.getId();
+	}
+
+	// GET /schedules/{scheduleId}
+	public ScheduleResponse getSchedule(Long scheduleId) {
+		String scheduleKey = "schedule:" + scheduleId;
+		String cachedData = redisTemplate.opsForValue().get(scheduleKey);
+
+		if (cachedData != null) {
+            try {
+                return objectMapper.readValue(cachedData, ScheduleResponse.class);
+            } catch (JsonProcessingException e) {
+                log.error("[Schedule] 캐시 데이터 가져오기 실패", e);
+				redisTemplate.delete(scheduleKey);
+            }
+        }
+
+		Schedule schedule = scheduleRepository.findById(scheduleId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 일정입니다."));
+		ScheduleResponse response = ScheduleResponse.from(schedule);
+
+        try {
+            redisTemplate.opsForValue().set(scheduleKey, objectMapper.writeValueAsString(response), Duration.ofMinutes(10));
+        } catch (JsonProcessingException e) {
+            log.error("[Schedule] 캐싱 실패", e);
+        }
+
+		return response;
+    }
+
+	// DEL /schedules/{scheduleId}
+	@Transactional
+	public void deleteSchedule(Long scheduleId) {
+		String scheduleKey = "schedule:" + scheduleId;
+		String cachedData = redisTemplate.opsForValue().get(scheduleKey);
+		Schedule schedule = scheduleRepository.findById(scheduleId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 일정입니다."));
+		scheduleRepository.delete(schedule);
+		if (cachedData != null) redisTemplate.delete(scheduleKey);
 	}
 }

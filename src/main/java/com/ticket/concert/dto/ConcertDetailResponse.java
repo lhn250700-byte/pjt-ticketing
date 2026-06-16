@@ -2,12 +2,15 @@ package com.ticket.concert.dto;
 
 import com.ticket.concert.domain.Concert;
 import com.ticket.schedule.dto.ScheduleResponse;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
 @Getter
+@NoArgsConstructor
 public class ConcertDetailResponse {
     private Long concertId;
     private String title;

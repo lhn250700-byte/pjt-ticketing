@@ -1,5 +1,6 @@
 package com.ticket.seat.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -17,4 +18,6 @@ public interface SeatRepository extends JpaRepository<Seat, Long>{
 	@Lock(LockModeType.PESSIMISTIC_WRITE)
 	@Query("select s from Seat s where s.id = :id")
 	Optional<Seat> findWithLockById(@Param("id") Long id);
+
+	List<Seat> findByScheduleId(Long scheduleId);
 }

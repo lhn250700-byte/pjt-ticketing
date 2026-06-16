@@ -56,4 +56,23 @@ public class Concert {
 		this.venue = venue;
 		this.description = description;
 	}
+
+	public void update(String title, String description, String venue, Integer runtime) {
+		if (title != null) {
+			if (title.length() > 20) throw new IllegalArgumentException("공연 제목은 최대 20글자 제한입니다.");
+			this.title = title;
+		}
+		if (description != null) {
+			if (description.length() > 100) throw new IllegalArgumentException("공연 설명은 최대 100글자 제한입니다.");
+			this.description = description;
+		}
+		if (venue != null) {
+			if (venue.length() > 100) throw new IllegalArgumentException("공연 장소는 최대 100글자 제한입니다.");
+			this.venue = venue;
+		}
+		if (runtime != null) {
+			if (runtime < 1) throw new IllegalArgumentException("공연 시간은 1분 이상이어야 합니다.");
+			this.runtime = runtime;
+		}
+	}
 }

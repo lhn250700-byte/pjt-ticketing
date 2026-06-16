@@ -2,13 +2,11 @@ package com.ticket.concert.controller;
 
 import java.util.List;
 
+import com.ticket.concert.dto.ConcertDetailResponse;
+import com.ticket.concert.dto.CursorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.ticket.concert.dto.ConcertCreate;
 import com.ticket.concert.dto.ConcertResponse;
@@ -37,15 +35,30 @@ public class ConcertController {
 	    return ResponseEntity.status(HttpStatus.CREATED).body(concertId);
 	}
 
+	// 페이징 전
+//	@GetMapping
+//	public List<ConcertResponse> getAllConcerts() {
+//
+//	    log.info("GET /concerts 요청");
+//
+//	    List<ConcertResponse> concerts = concertService.getAllConcerts();
+//
+//	    log.info("GET /concerts 완료. count={}", concerts.size());
+//
+//	    return concerts;
+//	}
+	// 페이징 후
 	@GetMapping
-	public List<ConcertResponse> getAllConcerts() {
+	public ResponseEntity<CursorResponse<ConcertResponse>> getConcerts(
+			@RequestParam(required = false) Long nextId,
+			@RequestParam(defaultValue = "10") int size
+	) {
+		return ResponseEntity.ok(concertService.getConcerts(nextId, size));
+	}
 
-	    log.info("GET /concerts 요청");
-
-	    List<ConcertResponse> concerts = concertService.getAllConcerts();
-
-	    log.info("GET /concerts 완료. count={}", concerts.size());
-
-	    return concerts;
+	// 단건 조회
+	@GetMapping("/{concertId}")
+	public ResponseEntity<ConcertDetailResponse> getConcert(@PathVariable Long concertId) {
+		return ResponseEntity.ok(concertService.getConcert(concertId));
 	}
 }

@@ -31,40 +31,40 @@ public class ReservationService {
 	private final SeatRepository seatRepository;
 	
 	@Transactional
-	public Long makeReservation(MakeReservationRequest req) throws BadRequestException {
+	public Long makeReservation(Long userId, Long scheduleId, Long seatId) throws BadRequestException {
 
 	    log.info("예약 생성 시작. userId={}, scheduleId={}, seatId={}",
-	            req.getUserId(), req.getScheduleId(), req.getSeatId());
+	            userId, scheduleId, seatId);
 
-	    User user = userRepository.findById(req.getUserId())
+	    User user = userRepository.findById(userId)
 	            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 User Id 입니다."));
 
-	    Schedule schedule = scheduleRepository.findById(req.getScheduleId())
+	    Schedule schedule = scheduleRepository.findById(scheduleId)
 	            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 Schedule Id 입니다."));
 
-	    Seat seat = seatRepository.findWithLockById(req.getSeatId())
+	    Seat seat = seatRepository.findWithLockById(seatId)
 	            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 Seat Id 입니다."));
 
 	    if (!seat.getSchedule().getId().equals(schedule.getId())) {
 	        log.warn("예약 실패 - 좌석/스케줄 불일치. userId={}, scheduleId={}, seatId={}",
-	                req.getUserId(), req.getScheduleId(), req.getSeatId());
+					userId, scheduleId, seatId);
 	        throw new BadRequestException("유효하지 않는 좌석입니다.");
 	    }
 
 	    if (seat.getIsReserved()) {
-	        log.warn("예약 실패 - 이미 예약된 좌석. seatId={}", req.getSeatId());
+	        log.warn("예약 실패 - 이미 예약된 좌석. seatId={}", seatId);
 	        throw new BadRequestException("이미 예약된 좌석입니다.");
 	    }
 
 	    if (LocalDateTime.now().isBefore(schedule.getBookOpen())) {
 	        log.warn("예약 실패 - 티켓 오픈 전. scheduleId={}, bookOpen={}",
-	                req.getScheduleId(), schedule.getBookOpen());
+					scheduleId, schedule.getBookOpen());
 	        throw new BadRequestException("아직 티케팅 오픈 시간이 아닙니다.");
 	    }
 
 	    if (LocalDateTime.now().isAfter(schedule.getStart())) {
 	        log.warn("예약 실패 - 공연 시작 이후. scheduleId={}, startTime={}",
-	                req.getScheduleId(), schedule.getStart());
+					scheduleId, schedule.getStart());
 	        throw new BadRequestException("이미 시작했거나 종료된 공연입니다.");
 	    }
 

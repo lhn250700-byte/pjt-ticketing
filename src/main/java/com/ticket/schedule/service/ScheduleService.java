@@ -50,17 +50,17 @@ public class ScheduleService {
 	    Long price;
 	    List<Seat> seatList = new ArrayList<>();
 
-	    for (int i = 1; i <= 50; i++) {
-	        if (i <= 10) {
-	            grade = SeatGrade.VIP;
-	            price = 150_000L;
-	        } else if (i >= 11 && i <= 30) {
-	            grade = SeatGrade.R;
-	            price = 120_000L;
-	        } else {
-	            grade = SeatGrade.S;
-	            price = 100_000L;
-	        }
+		for (int i = 1; i <= 30000; i++) {
+			if (i <= 3000) {
+				grade = SeatGrade.VIP;
+				price = 150_000L;
+			} else if (i >= 3001 && i <= 15000) {
+				grade = SeatGrade.R;
+				price = 120_000L;
+			} else {
+				grade = SeatGrade.S;
+				price = 100_000L;
+			}
 
 	        Seat seat = Seat.builder()
 	                .number(i + "번")

@@ -28,10 +28,13 @@ public class Concert {
 	
 	@Column(name = "c_desc", length = 100)
 	private String description;
+
+	@Column(name = "c_venue", length = 100, nullable = false)
+	private String venue;
 	
 	@Column(name = "c_runtime", nullable = false)
 	private Integer runtime;
-	
+
 	private LocalDateTime createdAt;
 	private LocalDateTime updatedAt;
 	
@@ -47,9 +50,10 @@ public class Concert {
 	}
 	
 	@Builder
-	public Concert(String title, String description, Integer runtime) {
+	public Concert(String title, String description, String venue, Integer runtime) {
 		this.title = title;
 		this.runtime = runtime;
+		this.venue = venue;
 		this.description = description;
 	}
 }

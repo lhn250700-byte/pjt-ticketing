@@ -8,9 +8,5 @@ import lombok.Getter;
 @AllArgsConstructor
 public class MakeReservationRequest {
 	@NotNull
-	private Long userId;
-	@NotNull
-	private Long scheduleId;
-	@NotNull
 	private Long seatId;
 }

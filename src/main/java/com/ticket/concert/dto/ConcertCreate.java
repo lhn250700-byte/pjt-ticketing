@@ -14,6 +14,10 @@ public class ConcertCreate {
 	
 	@Size(max = 100, message = "공연 설명은 최대 100글자 제한입니다.")
 	private String description;
+
+	@NotBlank
+	@Size(max = 100, message = "공연 장소는 최대 100글자 제한입니다.")
+	private String venue;
 	
 	@NotNull
 	@Min(value = 1, message = "공연 시간은 1분 이상이어야 합니다.")

@@ -5,7 +5,9 @@ import org.springframework.stereotype.Repository;
 
 import com.ticket.schedule.domain.Schedule;
 
+import java.util.List;
+
 @Repository
 public interface ScheduleRepository extends JpaRepository<Schedule, Long>{
-
+    List<Schedule> findByConcertIdOrderByStartAsc(Long concertId);
 }

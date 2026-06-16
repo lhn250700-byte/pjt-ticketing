@@ -1,5 +1,6 @@
 package com.ticket.queue.scheduler;
 
+import com.ticket.reservation.kafka.producer.ReservationProducer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -13,6 +14,7 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class QueueScheduler {
     private final StringRedisTemplate redisTemplate;
+    private final ReservationProducer reservationProducer;
 
     // 1초마다 주기적으로 대기열의 상위 유저들을 활성화 상태로 전환
     @Scheduled(fixedDelay = 1000)
@@ -33,11 +35,31 @@ public class QueueScheduler {
         log.info("[스케줄러 작동] 대기열 유저 {}명을 활성화 방(Active)으로 진입시킵니다.", waitUsers.size());
 
         for (String userValue : waitUsers) {
-            // 통과된 유저들 Active 방에 넣기
-            redisTemplate.opsForSet().add(activeKey, userValue);
+            try {
+                // 통과된 유저들 Active 방에 넣기
+                redisTemplate.opsForSet().add(activeKey, userValue);
+                // 통과 후 기존 대기열 삭제
+                redisTemplate.opsForZSet().remove(waitKey, userValue);
+                // Redis에 저장된 토큰:userId 문자열 파싱
+                Long userId;
+                String queueToken;
 
-            // 통과 후 기존 대기열 삭제
-            redisTemplate.opsForZSet().remove(waitKey, userValue);
+                if (userValue.contains(":")) {
+                    String[] parts = userValue.split(":");
+                    queueToken = parts[0];
+                    userId = Long.parseLong(parts[1]);
+                } else {
+                    // 혹시 토큰 없이 유저 ID만 들어왔을 때를 대비한 방어 코드
+                    queueToken = "default-token-" + userValue;
+                    userId = Long.parseLong(userValue);
+                }
+
+                Long seatId = (long) (Math.random() * 30000) + 1;
+                // 카프카에 데이터 태우기
+                reservationProducer.sendReservationEvent(userId, scheduleId, seatId, queueToken);
+            } catch (Exception e) {
+                log.error("[스케줄러 에러] 유저 {} 처리 중 스케줄러 내부 장애 발생 : ", userValue, e);
+            }
         }
     }
 }

@@ -31,8 +31,6 @@ public class UserController {
 
 	    Long userId = userService.signUp(req);
 
-	    log.info("회원가입 완료. userId={}", userId);
-
 	    return ResponseEntity.status(HttpStatus.CREATED).body(userId);
 	}
 

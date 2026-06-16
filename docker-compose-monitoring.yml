@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus-container
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090" # 프로메테우스 대시보드 포트
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana-container
+    ports:
+      - "3000:3000" # 그라파나 시각화 대시보드 포트
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin # 로그인 비밀번호를 'admin'으로 세팅

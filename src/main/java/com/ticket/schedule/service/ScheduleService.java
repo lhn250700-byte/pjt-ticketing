@@ -1,6 +1,7 @@
 package com.ticket.schedule.service;
 
 import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -83,6 +84,15 @@ public class ScheduleService {
 
 	    log.info("좌석 생성 완료. scheduleId={}, seatCount={}",
 	            newSchedule.getId(), seatList.size());
+
+		String inventoryKey = "concert:schedule:" + newSchedule.getId() + ":seat:count";
+		LocalDateTime now = LocalDateTime.now();
+		LocalDateTime performanceStart = newSchedule.getStart();
+		Duration ttl = Duration.between(now, performanceStart).plusDays(1);
+		redisTemplate.opsForValue().set(inventoryKey, "30000");
+		redisTemplate.expire(inventoryKey, ttl);
+
+		log.info("[Redis] 스케줄 {}의 잔여 좌석 키가 생성되었습니다. 수량: {}", newSchedule.getId(), 30000);
 
 	    return newSchedule.getId();
 	}

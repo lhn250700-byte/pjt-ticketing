@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ticket.reservation.dto.MakeReservationRequest;
 import com.ticket.reservation.service.ReservationService;
+import com.ticket.seat.service.SeatHoldService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.coyote.BadRequestException;
@@ -23,8 +24,9 @@ import java.util.Map;
 @Component
 @RequiredArgsConstructor
 public class ReservationConsumer {
-    private final ReservationService reservationService;
+//    private final ReservationService reservationService;
     private final StringRedisTemplate redisTemplate;
+    private final SeatHoldService seatHoldService;
 
     @KafkaListener(
             topics = "concert.reservation.events",
@@ -45,15 +47,21 @@ public class ReservationConsumer {
         try {
             log.info("[Kafka Consumer] 데이터 파싱 성공 | 유저: {}, 일정: {}, 좌석: {}", userId, scheduleId, seatId);
 
-            Long reservationId = reservationService.makeReservation(userId, scheduleId, seatId);
-            log.info("[Kafka Consumer] 메인 DB 반영 성공 | 최종 예매 완료 (예매 ID: {})", reservationId);
+//            Long reservationId = reservationService.makeReservation(userId, scheduleId, seatId);
+//            log.info("[Kafka Consumer] 메인 DB 반영 성공 | 최종 예매 완료 (예매 ID: {})", reservationId);
+            seatHoldService.holdSeat(scheduleId, userId, seatId);
+            log.info("[Kafka Consumer] Redis 임시 선점 성공 | 유저 {} 선점권 획득", userId);
 
+            // 임시 선점 성공 => active방 + 대기실 유저 토큰 정리
             redisTemplate.opsForSet().remove(activeKey, queueValue);
+            redisTemplate.delete("concert:user:" + userId + ":schedule:" + scheduleId);
             log.info("[Kafka Consumer] 유저 {} 예매 완료로 인한 대기열 토큰 정리 완료", userId);
         } catch (BadRequestException e) {
             log.info("[Kafka Consumer] 좌석 선점 실패 유저 대기열 정리 : {}", userId);
             redisTemplate.opsForSet().remove(activeKey, queueValue);
+            redisTemplate.delete("concert:user:" + userId + ":schedule:" + scheduleId);
         } catch (Exception e) {
+            log.error("예매 처리 실패", e);
             throw new RuntimeException("[Kafka Consumer] 최종 예매 처리 중 장애 발생: ", e);
         }
     }

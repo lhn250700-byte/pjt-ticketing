@@ -16,3 +16,20 @@ services:
       - "3000:3000" # 그라파나 시각화 대시보드 포트
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=admin # 로그인 비밀번호를 'admin'으로 세팅
+
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:latest
+    container_name: postgres-exporter
+    # network_mode: "host"를 사용하면 컨테이너가 호스트(PC)의 네트워크를 그대로 사용하므로
+    # localhost를 통해 PC에 띄워진 postgres(5432)와 프로메테우스가 모두 연결됩니다.
+    network_mode: "host"
+    environment:
+      - DATA_SOURCE_NAME=postgresql://postgres:postgres@localhost:5432/ticketing?sslmode=disable
+
+  redis-exporter:
+    image: oliver006/redis_exporter:latest
+    container_name: redis-exporter
+    ports:
+      - "9121:9121"
+    environment:
+      - REDIS_ADDR=redis://host.docker.internal:6379

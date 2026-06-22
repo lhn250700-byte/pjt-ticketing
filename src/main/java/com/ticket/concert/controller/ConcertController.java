@@ -50,25 +50,37 @@ public class ConcertController {
 			@RequestParam(required = false) Long nextId,
 			@RequestParam(defaultValue = "10") int size
 	) {
-		return ResponseEntity.ok(concertService.getConcerts(nextId, size));
+		log.info("GET /concerts 요청");
+		CursorResponse<ConcertResponse> response = concertService.getConcerts(nextId, size);
+		log.info("GET /concerts 완료. count={}", response.content().size());
+
+		return ResponseEntity.ok(response);
 	}
 
 	// 단건 조회
 	@GetMapping("/{concertId}")
 	public ResponseEntity<ConcertDetailResponse> getConcert(@PathVariable Long concertId) {
-		return ResponseEntity.ok(concertService.getConcert(concertId));
+		log.info("GET /concerts/{} 요청", concertId);
+		ConcertDetailResponse res = concertService.getConcert(concertId);
+		log.info("GET /concerts/{} 완료", concertId);
+		return ResponseEntity.ok(res);
 	}
 
 	// 수정
 	@PatchMapping("/{concertId}")
 	public ResponseEntity<ConcertResponse> updateConcert(@PathVariable Long concertId, @RequestBody ConcertUpdate req) {
-		return ResponseEntity.ok(concertService.updateConcert(concertId, req));
+		log.info("PATCH /concerts/{} 요청", concertId);
+		ConcertResponse response = concertService.updateConcert(concertId, req);
+		log.info("PATCH /concerts/{} 완료", concertId);
+		return ResponseEntity.ok(response);
 	}
 
 	// 삭제
 	@DeleteMapping("/{concertId}")
 	public ResponseEntity<String> deleteConcert(@PathVariable Long concertId) {
+		log.info("DEL /concerts/{} 요청", concertId);
 		concertService.deleteConcert(concertId);
+		log.info("DEL /concerts/{} 완료", concertId);
 		return ResponseEntity.ok(concertId + " 삭제 완료");
 	}
 }

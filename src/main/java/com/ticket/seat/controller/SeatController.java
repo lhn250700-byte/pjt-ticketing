@@ -24,6 +24,8 @@ public class SeatController {
 	@GetMapping("/schedules/{scheduleId}/seats")
 	public List<SeatResponse> getSeats(@PathVariable Long scheduleId) {
 		log.info("GET /schedules/{}/seats 요청", scheduleId);
-		return seatService.getSeats(scheduleId);
+		List<SeatResponse> seats = seatService.getSeats(scheduleId);
+		log.info("GET /schedules/{}/seats 완료. count={}", scheduleId, seats.size());
+		return seats;
 	}
 }

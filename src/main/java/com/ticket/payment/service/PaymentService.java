@@ -49,7 +49,7 @@ public class PaymentService {
         if (isHeld == null) {
             log.warn("[결제 실패] 5분 선점 시간이 만료되었거나 선점 내역이 없습니다. userId={}", userId);
             // 환불 로직 추가해야 함
-            throw new IllegalStateException("예매 선점 시간(5분)이 만료되었습니다. 결제가 취소됩니다.");
+            throw new IllegalStateException("예매 선점 시간(5분)이 만료되었거나 선점 내역이 없습니다. 결제가 취소됩니다.");
         }
 
         Long reservationId = reservationService.makeReservation(userId, scheduleId, seatId);

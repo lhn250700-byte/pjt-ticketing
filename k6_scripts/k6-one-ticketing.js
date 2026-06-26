@@ -7,7 +7,7 @@ export const options = {
 stages: [
         { duration: '30s', target: 500 },  // 30초 동안 500명까지 점진적 증가
         { duration: '30s', target: 1000 }, // 다음 30초 동안 1,000명까지 증가
-        { duration: '1m',  target: 1500 }, // 1분 동안 목표치인 1,500명 유지 (피크 타임 검증)
+        { duration: '1m',  target: 1000 }, // 1분 동안 목표치인 1,06-one00명 유지 (피크 타임 검증)
         { duration: '30s', target: 0 },    // 30초 동안 부하 감축 및 정리
     ],
     thresholds: {
@@ -18,7 +18,7 @@ stages: [
 
 const BASE_URL = 'http://localhost:8080';
 const SCHEDULE_ID = 1;
-const TARGET_SEAT_ID = 14;
+const TARGET_SEAT_ID = 16;
 const TARGET_PRICE = 150000;
 
 // ==================== 상태코드 집계 ====================

@@ -3,8 +3,8 @@ import { check, sleep } from 'k6';
 
 // 1. 테스트 조건 설정 (VU 100명, 1분 동안 실행)
 export const options = {
-    vus: 1000,
-    duration: '1m',
+    vus: 500,
+    duration: '60s',
 };
 
 export default function () {
@@ -17,7 +17,7 @@ export default function () {
     let res1 = http.get(`${BASE_URL}?size=${SIZE}`);
 
     // 정상 응답(200)인지 체크
-    check(res1, { '1인 페이지 조회 성공': (r) => r.status === 200 });
+    check(res1, { '1페이지 조회 성공': (r) => r.status === 200 });
 
     // 응답 바디에서 다음 커서 ID 추출
     let body1 = JSON.parse(res1.body);

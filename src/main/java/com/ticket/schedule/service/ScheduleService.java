@@ -58,11 +58,11 @@ public class ScheduleService {
 	    Long price;
 	    List<Seat> seatList = new ArrayList<>();
 
-		for (int i = 1; i <= 30000; i++) {
-			if (i <= 3000) {
+		for (int i = 1; i <= 10000; i++) {
+			if (i <= 1000) {
 				grade = SeatGrade.VIP;
 				price = 150_000L;
-			} else if (i >= 3001 && i <= 15000) {
+			} else if (i <= 5000) {
 				grade = SeatGrade.R;
 				price = 120_000L;
 			} else {
@@ -70,15 +70,15 @@ public class ScheduleService {
 				price = 100_000L;
 			}
 
-	        Seat seat = Seat.builder()
-	                .number(i + "번")
-	                .grade(grade)
-	                .price(price)
-	                .schedule(newSchedule)
-	                .build();
+			Seat seat = Seat.builder()
+					.number(i + "번")
+					.grade(grade)
+					.price(price)
+					.schedule(newSchedule)
+					.build();
 
-	        seatList.add(seat);
-	    }
+			seatList.add(seat);
+		}
 
 	    seatRepository.saveAll(seatList);
 

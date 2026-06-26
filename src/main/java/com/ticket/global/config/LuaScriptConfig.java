@@ -19,7 +19,7 @@ public class LuaScriptConfig {
     @Bean
     public RedisScript<Long> holdSeatScript() {
         String script =
-                // 1. 🎯 [핵심] 해당 좌석이 이미 선점되어 존재하는지 확인 (이미 있으면 0 리턴하며 즉시 튕겨냄)
+                // 1. 해당 좌석이 이미 선점되어 존재하는지 확인 (이미 있으면 0 리턴하며 즉시 튕겨냄)
                 "if redis.call('exists', KEYS[1]) == 1 then " +
                         "return 0 " +
                         "end " +
@@ -38,7 +38,7 @@ public class LuaScriptConfig {
                         // 4. 재고가 남아있다면 원자적으로 좌석 점유 및 수량 차감 진행
                         "if available >= requested then " +
                         "redis.call('decrby', KEYS[3], requested) " +                          // 전체 재고 차감
-                        "redis.call('set', KEYS[1], ARGV[3], 'EX', ARGV[2]) " +                // 🎯 좌석 고유 키 생성 (값: userId, TTL: 5분)
+                        "redis.call('set', KEYS[1], ARGV[3], 'EX', ARGV[2]) " +                // 좌석 고유 키 생성 (값: userId, TTL: 5분)
                         "redis.call('set', KEYS[2], ARGV[3], 'EX', ARGV[2]) " +                // 유저 hold 키 생성 (값: userId, TTL: 5분)
                         "return 1 " + // 최초 성공자 딱 1명만 1을 받음
                         "else " +

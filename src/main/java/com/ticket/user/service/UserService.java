@@ -1,8 +1,10 @@
 package com.ticket.user.service;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.ticket.global.error.BusinessException;
 import com.ticket.user.domain.User;
 import com.ticket.user.dto.UserResponse;
 import com.ticket.user.dto.UserSignUpReqeust;
@@ -41,7 +43,7 @@ public class UserService {
 	    log.debug("유저 조회 시작. userId={}", id);
 
 	    User user = userRepository.findById(id)
-	            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
+	            .orElseThrow(() -> new BusinessException(HttpStatus.NOT_FOUND, "존재하지 않는 회원입니다."));
 
 	    log.debug("유저 조회 완료. userId={}", id);
 

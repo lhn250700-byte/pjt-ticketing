@@ -30,8 +30,7 @@ public class ReservationController {
 			@RequestHeader("User-Id") Long userId,
 			@RequestHeader("Queue-Token") String token,
 			@RequestParam("scheduleId") Long scheduleId,
-			@RequestBody ReservationRequestBody dto)
-	        throws BadRequestException {
+			@RequestBody ReservationRequestBody dto) {
 
 		MakeReservationRequest req = MakeReservationRequest
 				.builder()

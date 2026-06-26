@@ -9,11 +9,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ticket.schedule.dto.ScheduleResponse;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.ticket.concert.domain.Concert;
 import com.ticket.concert.repository.ConcertRepository;
+import com.ticket.global.error.BusinessException;
 import com.ticket.schedule.domain.Schedule;
 import com.ticket.schedule.dto.ScheduleCreateRequest;
 import com.ticket.schedule.repository.ScheduleRepository;
@@ -34,29 +36,25 @@ public class ScheduleService {
 	private final SeatRepository seatRepository;
 	private final StringRedisTemplate redisTemplate;
 	private final ObjectMapper objectMapper;
-	
+
 	@Transactional
 	public Long createSchedule(ScheduleCreateRequest req) {
 
-	    log.info("스케줄 생성 시작. concertId={}, start={}, bookOpen={}",
-	            req.getId(), req.getStart(), req.getBookOpen());
+		log.info("스케줄 생성 시작. concertId={}, start={}, bookOpen={}", req.getId(), req.getStart(), req.getBookOpen());
 
-	    Concert concert = concertRepository.findById(req.getId())
-	            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 Concert ID입니다."));
+		Concert concert = concertRepository.findById(req.getId())
+				.orElseThrow(() -> new BusinessException(HttpStatus.NOT_FOUND, "존재하지 않는 Concert ID입니다."));
 
-	    Schedule schdule = Schedule.builder()
-	            .concert(concert)
-	            .start(req.getStart())
-	            .bookOpen(req.getBookOpen())
-	            .build();
+		Schedule schedule = Schedule.builder().concert(concert).start(req.getStart()).bookOpen(req.getBookOpen())
+				.build();
 
-	    Schedule newSchedule = scheduleRepository.save(schdule);
+		Schedule newSchedule = scheduleRepository.save(schedule);
 
-	    log.info("스케줄 생성 완료. scheduleId={}", newSchedule.getId());
+		log.info("스케줄 생성 완료. scheduleId={}", newSchedule.getId());
 
-	    SeatGrade grade;
-	    Long price;
-	    List<Seat> seatList = new ArrayList<>();
+		SeatGrade grade;
+		Long price;
+		List<Seat> seatList = new ArrayList<>();
 
 		for (int i = 1; i <= 10000; i++) {
 			if (i <= 1000) {
@@ -80,10 +78,9 @@ public class ScheduleService {
 			seatList.add(seat);
 		}
 
-	    seatRepository.saveAll(seatList);
+		seatRepository.saveAll(seatList);
 
-	    log.info("좌석 생성 완료. scheduleId={}, seatCount={}",
-	            newSchedule.getId(), seatList.size());
+		log.info("좌석 생성 완료. scheduleId={}, seatCount={}", newSchedule.getId(), seatList.size());
 
 		String inventoryKey = "concert:schedule:" + newSchedule.getId() + ":seat:count";
 		LocalDateTime now = LocalDateTime.now();
@@ -94,7 +91,7 @@ public class ScheduleService {
 
 		log.info("[Redis] 스케줄 {}의 잔여 좌석 키가 생성되었습니다. 수량: {}", newSchedule.getId(), 30000);
 
-	    return newSchedule.getId();
+		return newSchedule.getId();
 	}
 
 	// GET /schedules/{scheduleId}
@@ -103,32 +100,34 @@ public class ScheduleService {
 		String cachedData = redisTemplate.opsForValue().get(scheduleKey);
 
 		if (cachedData != null) {
-            try {
-                return objectMapper.readValue(cachedData, ScheduleResponse.class);
-            } catch (JsonProcessingException e) {
-                log.error("[Schedule] 캐시 데이터 가져오기 실패", e);
+			try {
+				return objectMapper.readValue(cachedData, ScheduleResponse.class);
+			} catch (JsonProcessingException e) {
+				log.error("[Schedule] 캐시 데이터 가져오기 실패", e);
 				redisTemplate.delete(scheduleKey);
-            }
-        }
+			}
+		}
 
-		Schedule schedule = scheduleRepository.findById(scheduleId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 일정입니다."));
+		Schedule schedule = scheduleRepository.findById(scheduleId)
+				.orElseThrow(() -> new BusinessException(HttpStatus.NOT_FOUND, "존재하지 않는 일정입니다."));
 		ScheduleResponse response = ScheduleResponse.from(schedule);
 
-        try {
-            redisTemplate.opsForValue().set(scheduleKey, objectMapper.writeValueAsString(response), Duration.ofMinutes(10));
-        } catch (JsonProcessingException e) {
-            log.error("[Schedule] 캐싱 실패", e);
-        }
+		try {
+			redisTemplate.opsForValue().set(scheduleKey, objectMapper.writeValueAsString(response),
+					Duration.ofMinutes(10));
+		} catch (JsonProcessingException e) {
+			log.error("[Schedule] 캐싱 실패", e);
+		}
 
 		return response;
-    }
+	}
 
 	// DEL /schedules/{scheduleId}
 	@Transactional
 	public void deleteSchedule(Long scheduleId) {
 		String scheduleKey = "schedule:" + scheduleId;
 		String cachedData = redisTemplate.opsForValue().get(scheduleKey);
-		Schedule schedule = scheduleRepository.findById(scheduleId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 일정입니다."));
+		Schedule schedule = scheduleRepository.findById(scheduleId).orElseThrow(() -> new BusinessException(HttpStatus.NOT_FOUND, "존재하지 않는 일정입니다."));
 		scheduleRepository.delete(schedule);
 		if (cachedData != null) redisTemplate.delete(scheduleKey);
 	}

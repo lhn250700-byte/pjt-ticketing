@@ -1,5 +1,6 @@
 package com.ticket.queue.service;
 
+import com.ticket.global.error.BusinessException;
 import com.ticket.queue.dto.QueueResponse;
 import com.ticket.schedule.domain.Schedule;
 import com.ticket.schedule.repository.ScheduleRepository;
@@ -7,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.coyote.BadRequestException;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,23 +25,24 @@ public class QueueService {
 
     // 대기열 진입 및 번호표 (토큰) 발급
     @Transactional
-    public QueueResponse registerQueue(Long scheduleId, Long userId) throws BadRequestException {
+    public QueueResponse registerQueue(Long scheduleId, Long userId) {
         // 회차별로 대기열 key 생성 ex) concert:queue:1
         String queueKey = "concert:queue:" + scheduleId; // Sorted Set 대기실
         String activeKey  = "concert:queue:active:" + scheduleId; // 활성화방 (Set)
         String userTokenKey = "concert:user:" + userId + ":schedule:" + scheduleId;
-        Schedule schedule = scheduleRepository.findById(scheduleId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 일정입니다."));
+        Schedule schedule = scheduleRepository.findById(scheduleId).orElseThrow(() -> new BusinessException(HttpStatus.NOT_FOUND, "존재하지 않는 일정입니다."));
+        LocalDateTime now = LocalDateTime.now();
 
-        if (LocalDateTime.now().isBefore(schedule.getBookOpen())) {
+        if (now.isBefore(schedule.getBookOpen())) {
 	        log.warn("예약 실패 - 티켓 오픈 전. scheduleId={}, bookOpen={}",
 					scheduleId, schedule.getBookOpen());
-	        throw new BadRequestException("아직 티케팅 오픈 시간이 아닙니다.");
+	        throw new BusinessException(HttpStatus.BAD_REQUEST, "아직 티케팅 오픈 시간이 아닙니다.");
 	    }
 
-	    if (LocalDateTime.now().isAfter(schedule.getStart())) {
+	    if (now.isAfter(schedule.getStart())) {
 	        log.warn("예약 실패 - 공연 시작 이후. scheduleId={}, startTime={}",
 					scheduleId, schedule.getStart());
-	        throw new BadRequestException("이미 시작했거나 종료된 공연입니다.");
+	        throw new BusinessException(HttpStatus.GONE, "이미 시작했거나 종료된 공연입니다.");
 	    }
 
         // 해당 유저가 기발급 토큰이 있는지 조회

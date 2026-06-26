@@ -2,6 +2,7 @@ package com.ticket.reservation.kafka.consumer;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ticket.global.error.BusinessException;
 import com.ticket.reservation.dto.MakeReservationRequest;
 import com.ticket.reservation.service.ReservationService;
 import com.ticket.seat.service.SeatHoldService;
@@ -56,7 +57,11 @@ public class ReservationConsumer {
             redisTemplate.opsForSet().remove(activeKey, queueValue);
             redisTemplate.delete("concert:user:" + userId + ":schedule:" + scheduleId);
             log.info("[Kafka Consumer] 유저 {} 예매 완료로 인한 대기열 토큰 정리 완료", userId);
-        } catch (BadRequestException e) {
+        } catch (BusinessException e) {
+        		if (e.getStatus().is5xxServerError()) {
+        			throw e;
+        		}
+        		
             log.info("[Kafka Consumer] 좌석 선점 실패 유저 대기열 정리 : {}", userId);
             redisTemplate.opsForSet().remove(activeKey, queueValue);
             redisTemplate.delete("concert:user:" + userId + ":schedule:" + scheduleId);

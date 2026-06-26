@@ -21,7 +21,7 @@ public class QueueController {
     public ResponseEntity<QueueResponse> joinQueue(
             @RequestParam("scheduleId") Long scheduleId,
             @RequestParam("userId") Long userId
-    ) throws BadRequestException {
+    ) {
         QueueResponse response = queueService.registerQueue(scheduleId, userId);
         return ResponseEntity.ok(response);
     }

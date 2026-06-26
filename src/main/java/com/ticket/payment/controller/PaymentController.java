@@ -15,7 +15,7 @@ public class PaymentController {
     private final PaymentService paymentService;
 
     @PostMapping("/payments")
-    public ResponseEntity<PaymentResponse> pay(@RequestBody PaymentRequest req) throws BadRequestException {
+    public ResponseEntity<PaymentResponse> pay(@RequestBody PaymentRequest req) {
         return ResponseEntity.status(HttpStatus.CREATED).body(paymentService.pay(req));
     }
 }

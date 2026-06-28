@@ -1,8 +1,10 @@
-package com.ticket.reservation.kafka.config;
+package com.ticket.global.kafka.config;
 
+import org.apache.kafka.clients.admin.NewTopic;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
+import org.springframework.kafka.config.TopicBuilder;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.listener.DeadLetterPublishingRecoverer;
@@ -11,6 +13,14 @@ import org.springframework.util.backoff.FixedBackOff;
 
 @Configuration
 public class KafkaConsumerConfig {
+    @Bean // 토픽 기본 설정
+    public NewTopic reservationTopic() {
+        return TopicBuilder.name("concert.reservation.events")
+                .partitions(4)
+                .replicas(1)
+                .build();
+    }
+
     @Bean // 에러 발생 메시지를 즉시 원본토픽명 + .dlq로 포워딩하는 복구 장치
     public DeadLetterPublishingRecoverer recoverer(KafkaTemplate<Object, Object> template) {
         return new DeadLetterPublishingRecoverer(template);

@@ -1,7 +1,6 @@
 package com.ticket.concert.dto;
 
 import com.ticket.concert.domain.Concert;
-
 import lombok.Builder;
 import lombok.Getter;
 

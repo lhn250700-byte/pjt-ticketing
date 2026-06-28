@@ -48,8 +48,7 @@ public class Payment {
     }
 
     @Builder
-    public Payment(Long id, Reservation reservation, Long amount, PaymentStatus status, PaymentMethod method) {
-        this.id = id;
+    public Payment(Reservation reservation, Long amount, PaymentStatus status, PaymentMethod method) {
         this.reservation = reservation;
         this.amount = amount;
         this.status = status;

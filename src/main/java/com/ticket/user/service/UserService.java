@@ -1,17 +1,15 @@
 package com.ticket.user.service;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.ticket.global.error.BusinessException;
 import com.ticket.user.domain.User;
 import com.ticket.user.dto.UserResponse;
 import com.ticket.user.dto.UserSignUpReqeust;
 import com.ticket.user.repository.UserRepository;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor

@@ -1,16 +1,15 @@
 package com.ticket.reservation.domain;
 
-import java.time.LocalDateTime;
-
 import com.ticket.schedule.domain.Schedule;
 import com.ticket.seat.domain.Seat;
 import com.ticket.user.domain.User;
-
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -39,6 +38,18 @@ public class Reservation {
 	
 	private LocalDateTime createdAt;
 	private LocalDateTime updatedAt;
+
+	public void cancel() {
+		this.status = ReservationStatus.CANCELED;
+	}
+
+	public void reserve() {
+		this.status = ReservationStatus.CONFIRMED;
+	}
+
+	public void fail() {
+		this.status = ReservationStatus.FAILED;
+	}
 	
 	@PrePersist
 	protected void onCreate() {

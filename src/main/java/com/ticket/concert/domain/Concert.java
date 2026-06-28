@@ -1,18 +1,14 @@
 package com.ticket.concert.domain;
 
-import java.time.LocalDateTime;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
+import com.ticket.global.error.BusinessException;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.http.HttpStatus;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -59,19 +55,19 @@ public class Concert {
 
 	public void update(String title, String description, String venue, Integer runtime) {
 		if (title != null) {
-			if (title.length() > 20) throw new IllegalArgumentException("공연 제목은 최대 20글자 제한입니다.");
+			if (title.length() > 20) throw new BusinessException(HttpStatus.BAD_REQUEST, "공연 제목은 최대 20글자 제한입니다.");
 			this.title = title;
 		}
 		if (description != null) {
-			if (description.length() > 100) throw new IllegalArgumentException("공연 설명은 최대 100글자 제한입니다.");
+			if (description.length() > 100) throw new BusinessException(HttpStatus.BAD_REQUEST, "공연 설명은 최대 100글자 제한입니다.");
 			this.description = description;
 		}
 		if (venue != null) {
-			if (venue.length() > 100) throw new IllegalArgumentException("공연 장소는 최대 100글자 제한입니다.");
+			if (venue.length() > 100) throw new BusinessException(HttpStatus.BAD_REQUEST, "공연 장소는 최대 100글자 제한입니다.");
 			this.venue = venue;
 		}
 		if (runtime != null) {
-			if (runtime < 1) throw new IllegalArgumentException("공연 시간은 1분 이상이어야 합니다.");
+			if (runtime < 1) throw new BusinessException(HttpStatus.BAD_REQUEST, "공연 시간은 1분 이상이어야 합니다.");
 			this.runtime = runtime;
 		}
 	}

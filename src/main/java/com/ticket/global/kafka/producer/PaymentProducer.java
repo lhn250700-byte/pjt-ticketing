@@ -1,7 +1,8 @@
-package com.ticket.reservation.kafka.producer;
+package com.ticket.global.kafka.producer;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ticket.payment.service.PaymentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -13,26 +14,26 @@ import java.util.Map;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class ReservationProducer {
+public class PaymentProducer {
     private final KafkaTemplate<String, String> kafkaTemplate;
 
-    public void sendReservationEvent(Long userId, Long scheduleId, Long seatId, String queueToken) {
-        String topicName = "concert.reservation.events";
+    public void sendPaymentEvent(Long userId, Long reservationId, String token, Long amount, String method) {
+        String topicName = "concert.payment.events";
 
         try {
             Map<String, Object> payload = new HashMap<>();
-            payload.put("scheduleId", scheduleId);
-            payload.put("seatId", seatId);
-            payload.put("queueToken", queueToken);
+            payload.put("reservationId", reservationId);
+            payload.put("queueToken", token);
+            payload.put("amount", amount);
+            payload.put("method", method);
 
-            String messageValue = toJsonString(payload);
             String messageKey = userId.toString();
-
-            log.info("[Kafka Producer] 유저 {}의 예매 요청을 {} 토픽으로 발행합니다.", userId, messageKey);
+            String messageValue = toJsonString(payload);
+            log.info("[Kafka Producer] 유저 {}의 결제 요청을 {} 토픽으로 발행합니다.", userId, messageKey);
             kafkaTemplate.send(topicName, messageKey, messageValue);
         } catch (Exception e) {
             log.error("[Kafka Producer] 이벤트 발행 중 예외 발생 : ", e);
-            throw new RuntimeException("예매 요청 처리 중 서버 오류가 발생했습니다.");
+            throw new RuntimeException("결제 요청 처리 중 서버 오류가 발생했습니다.");
         }
     }
 

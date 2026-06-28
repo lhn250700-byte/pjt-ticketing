@@ -3,7 +3,6 @@ package com.ticket.queue.controller;
 import com.ticket.queue.dto.QueueResponse;
 import com.ticket.queue.service.QueueService;
 import lombok.RequiredArgsConstructor;
-import org.apache.coyote.BadRequestException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

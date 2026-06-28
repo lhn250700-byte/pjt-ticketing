@@ -1,28 +1,22 @@
 package com.ticket.reservation.service;
 
-import java.time.LocalDateTime;
-
-import com.ticket.reservation.kafka.producer.ReservationProducer;
-import org.apache.coyote.BadRequestException;
-import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.ticket.global.error.BusinessException;
 import com.ticket.reservation.domain.Reservation;
 import com.ticket.reservation.domain.ReservationStatus;
 import com.ticket.reservation.dto.MakeReservationRequest;
+import com.ticket.global.kafka.producer.ReservationProducer;
 import com.ticket.reservation.repository.ReservationRepository;
 import com.ticket.schedule.domain.Schedule;
-import com.ticket.schedule.repository.ScheduleRepository;
 import com.ticket.seat.domain.Seat;
 import com.ticket.seat.repository.SeatRepository;
 import com.ticket.user.domain.User;
 import com.ticket.user.repository.UserRepository;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -68,7 +62,7 @@ public class ReservationService {
 
 	    Reservation newRes = reservationRepository.save(reservation);
 
-	    seat.reservation();
+	    seat.reserve();
 
 	    log.info("예약 생성 성공. reservationId={}", newRes.getId());
 
@@ -86,7 +80,7 @@ public class ReservationService {
 			throw new BusinessException(HttpStatus.FORBIDDEN, "대기열을 통과하지 않은 비정상 접근입니다.");
 		}
 
-		reservationProducer.sendReservationEvent(req.getUserId(), req.getScheduleId(), req.getSeatId(), req.getQueueToken());
-		log.info("[임시 선점 요청 접수 완료] userId={}, seatId={}", req.getUserId(), req.getSeatId());
+//		reservationProducer.sendReservationEvent(req.getUserId(), req.getScheduleId(), req.getSeatId(), req.getQueueToken());
+//		log.info("[임시 선점 요청(카프카 이벤트 발행) 접수 완료] userId={}, seatId={}", req.getUserId(), req.getSeatId());
 	}
 }

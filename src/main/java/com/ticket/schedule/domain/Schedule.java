@@ -1,14 +1,13 @@
 package com.ticket.schedule.domain;
 
-import java.time.LocalDateTime;
-
 import com.ticket.concert.domain.Concert;
-
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Getter

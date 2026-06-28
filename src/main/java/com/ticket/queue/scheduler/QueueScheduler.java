@@ -1,6 +1,5 @@
 package com.ticket.queue.scheduler;
 
-import com.ticket.reservation.kafka.producer.ReservationProducer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.errors.AuthorizationException;
@@ -16,7 +15,6 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class QueueScheduler {
     private final StringRedisTemplate redisTemplate;
-    private final ReservationProducer reservationProducer;
 
     // 1초마다 주기적으로 대기열의 상위 유저들을 활성화 상태로 전환
     @Scheduled(fixedDelay = 1000)
@@ -32,7 +30,7 @@ public class QueueScheduler {
             String activeKey = "concert:queue:active:" + scheduleId;
 
             // 1초에 몇 명씩 통과시킬지 설정 (놀이공원 방식) (= 서버가 감당 가능한 수치)
-            long enterCount = 500L;
+            long enterCount = 3_000L;
 
             // Wait 대기열에서 가장 오래 기다린 상위 10명 추출
             Set<String> waitUsers = redisTemplate.opsForZSet().range(waitKey, 0, enterCount - 1);

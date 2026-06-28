@@ -17,4 +17,7 @@ public class MakeReservationRequest {
 	private Long scheduleId;
 	@NotNull
 	private String queueToken;
+
+	private Long amount;
+	private String method;
 }

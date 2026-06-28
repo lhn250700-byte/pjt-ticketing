@@ -1,9 +1,8 @@
 package com.ticket.reservation.repository;
 
+import com.ticket.reservation.domain.Reservation;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-
-import com.ticket.reservation.domain.Reservation;
 
 @Repository
 public interface ReservationRepository extends JpaRepository<Reservation, Long>{

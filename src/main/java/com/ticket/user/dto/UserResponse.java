@@ -1,7 +1,6 @@
 package com.ticket.user.dto;
 
 import com.ticket.user.domain.User;
-
 import lombok.Builder;
 import lombok.Getter;
 

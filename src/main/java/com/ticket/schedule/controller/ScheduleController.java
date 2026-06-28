@@ -1,17 +1,14 @@
 package com.ticket.schedule.controller;
 
-import com.ticket.schedule.dto.ScheduleResponse;
-import org.apache.coyote.Response;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
 import com.ticket.schedule.dto.ScheduleCreateRequest;
+import com.ticket.schedule.dto.ScheduleResponse;
 import com.ticket.schedule.service.ScheduleService;
-
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor

@@ -1,10 +1,8 @@
 package com.ticket.concert.repository;
 
-import com.ticket.concert.dto.ConcertResponse;
+import com.ticket.concert.domain.Concert;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-
-import com.ticket.concert.domain.Concert;
 
 import java.util.List;
 

@@ -1,11 +1,9 @@
 package com.ticket.schedule.dto;
 
-import java.time.LocalDateTime;
-
-import com.ticket.concert.domain.Concert;
-
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
+
+import java.time.LocalDateTime;
 
 @Getter
 public class ScheduleCreateRequest {

@@ -1,24 +1,22 @@
 package com.ticket.concert.service;
 
-import java.time.Duration;
-import java.util.List;
-import java.util.Optional;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ticket.concert.domain.Concert;
 import com.ticket.concert.dto.*;
+import com.ticket.concert.repository.ConcertRepository;
+import com.ticket.global.error.BusinessException;
 import com.ticket.schedule.dto.ScheduleResponse;
 import com.ticket.schedule.repository.ScheduleRepository;
-import org.springframework.data.redis.core.RedisTemplate;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.ticket.concert.domain.Concert;
-import com.ticket.concert.repository.ConcertRepository;
-
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.time.Duration;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -90,7 +88,7 @@ public class ConcertService {
 			}
 		}
 
-		Concert concert = concertRepository.findById(concertId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 콘서트입니다."));
+		Concert concert = concertRepository.findById(concertId).orElseThrow(() -> new BusinessException(HttpStatus.NOT_FOUND, "존재하지 않는 콘서트입니다."));
 
 		List<ScheduleResponse> schedules = scheduleRepository.findByConcertIdOrderByStartAsc(concertId)
 				.stream()
@@ -112,7 +110,7 @@ public class ConcertService {
 	// PATCH /concerts/{concertId}
 	@Transactional
 	public ConcertResponse updateConcert(Long concertId, ConcertUpdate req) {
-		Concert concert = concertRepository.findById(concertId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 콘서트입니다."));
+		Concert concert = concertRepository.findById(concertId).orElseThrow(() -> new BusinessException(HttpStatus.NOT_FOUND, "존재하지 않는 콘서트입니다."));
 		concert.update(req.getTitle(), req.getDescription(), req.getVenue(), req.getRuntime());
 		Concert savedConcert = concertRepository.save(concert);
 		String concertKey = "concert:" + concertId;
@@ -134,7 +132,7 @@ public class ConcertService {
 
 	@Transactional
 	public void deleteConcert(Long concertId) {
-		Concert concert = concertRepository.findById(concertId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 콘서트입니다."));
+		Concert concert = concertRepository.findById(concertId).orElseThrow(() -> new BusinessException(HttpStatus.NOT_FOUND, "존재하지 않는 콘서트입니다."));
 		String concertKey = "concert:" + concertId;
 		String cachedData = redisTemplate.opsForValue().get(concertKey);
 		concertRepository.delete(concert);

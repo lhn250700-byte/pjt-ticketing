@@ -14,34 +14,36 @@ import com.ticket.seat.domain.Seat;
 import com.ticket.seat.repository.SeatRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.coyote.BadRequestException;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RestController;
 
-@RestController
+@Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 @Slf4j
 public class PaymentService {
     private final PaymentRepository paymentRepository;
     private final ReservationRepository reservationRepository;
-    private final SeatRepository seatRepository;
-    private final ReservationService reservationService;
     private final StringRedisTemplate redisTemplate;
 
     @Transactional
-    public PaymentResponse pay(PaymentRequest req) {
+    public void payment(PaymentRequest req) {
         Long userId = req.getUserId();
         Long scheduleId = req.getScheduleId();
         Long seatId = req.getSeatId();
-        Seat seat = seatRepository.findById(seatId).orElseThrow(() -> new BusinessException(HttpStatus.NOT_FOUND, "존재하지 않는 좌석입니다."));
+        Long amount = req.getAmount();
+        String method = req.getMethod();
+        Long reservationId = req.getReservationId();
+        Reservation reservation = reservationRepository.findById(reservationId).orElseThrow(() -> new BusinessException(HttpStatus.NOT_FOUND,"존재하지 않는 예약입니다."));
+        Long seatPrice = reservation.getSeat().getPrice();
         log.info("[결제] userId={}, scheduleId={}, seatId={}", userId, scheduleId, seatId);
 
         // 결제 금액 비교 로직
-        if (!seat.getPrice().equals(req.getAmount())) {
-            log.warn("[결제 실패] 결제 금액 불일치. 좌석 금액={}, 요청 금액={}", seat.getPrice(), req.getAmount());
+        if (!seatPrice.equals(amount)) {
+            log.warn("[결제 실패] 결제 금액 불일치. 좌석 금액={}, 요청 금액={}", seatPrice, amount);
             throw new BusinessException(HttpStatus.BAD_REQUEST,"결제 금액이 좌석 금액과 일치하지 않습니다.");
         }
 
@@ -54,14 +56,11 @@ public class PaymentService {
             throw new BusinessException(HttpStatus.GONE, "예매 선점 시간(5분)이 만료되었거나 선점 내역이 없습니다. 결제가 취소됩니다.");
         }
 
-        Long reservationId = reservationService.makeReservation(userId, scheduleId, seatId);
-        Reservation reservation = reservationRepository.findById(reservationId).orElseThrow(() -> new BusinessException(HttpStatus.NOT_FOUND,"존재하지 않는 예약입니다."));
-
         Payment payment = Payment.builder()
                 .reservation(reservation)
                 .amount(req.getAmount())
                 .status(PaymentStatus.SUCCESS)
-                .method(PaymentMethod.valueOf(req.getMethod()))
+                .method(PaymentMethod.valueOf(method))
                 .build();
 
         Payment newPay = paymentRepository.save(payment);
@@ -69,7 +68,5 @@ public class PaymentService {
 
         redisTemplate.delete(userHoldKey);
         log.info("[Redis 정리 완료] 유저 {}의 5분 임시 선점 키 삭제 성공", userId);
-
-        return PaymentResponse.from(newPay);
     }
 }

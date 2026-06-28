@@ -1,20 +1,14 @@
-package com.ticket.reservation.kafka.consumer;
+package com.ticket.global.kafka.consumer;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ticket.global.error.BusinessException;
-import com.ticket.reservation.dto.MakeReservationRequest;
-import com.ticket.reservation.service.ReservationService;
 import com.ticket.seat.service.SeatHoldService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.coyote.BadRequestException;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.kafka.annotation.BackOff;
 import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.kafka.annotation.RetryableTopic;
 import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Component;
@@ -24,15 +18,16 @@ import java.util.Map;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class ReservationConsumer {
+public class ReservationConsumer1 {
 //    private final ReservationService reservationService;
     private final StringRedisTemplate redisTemplate;
     private final SeatHoldService seatHoldService;
 
-    @KafkaListener(
-            topics = "concert.reservation.events",
-            groupId = "concert-reservation-group"
-    )
+//    @KafkaListener(
+//            topics = "concert.reservation.events",
+//            groupId = "concert-reservation-group",
+//            concurrency = "4"
+//    )
     public void consumeReservationEvent(ConsumerRecord<String, String> record) {
         log.info("[Kafka Consumer] 메시지 수신 완료 | Partition: {}, Offset: {}, Key(UserId): {}", record.partition(), record.offset(), record.key());
         Long userId = Long.parseLong(record.key());
@@ -50,7 +45,7 @@ public class ReservationConsumer {
 
 //            Long reservationId = reservationService.makeReservation(userId, scheduleId, seatId);
 //            log.info("[Kafka Consumer] 메인 DB 반영 성공 | 최종 예매 완료 (예매 ID: {})", reservationId);
-            seatHoldService.holdSeat(scheduleId, userId, seatId);
+//            seatHoldService.holdSeat(scheduleId, userId, seatId);
             log.info("[Kafka Consumer] Redis 임시 선점 성공 | 유저 {} 선점권 획득", userId);
 
             // 임시 선점 성공 => active방 + 대기실 유저 토큰 정리
@@ -71,10 +66,10 @@ public class ReservationConsumer {
         }
     }
 
-    @KafkaListener(
-            topics = "concert.reservation.events.dlt",
-            groupId = "concert-reservation-dlt-group"
-    )
+//    @KafkaListener(
+//            topics = "concert.reservation.events.dlt",
+//            groupId = "concert-reservation-dlt-group"
+//    )
     public void listenDLQ(String message, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic, @Header(KafkaHeaders.OFFSET) Long offset) {
         log.error("======= [DLQ 에러 감지] =======");
         log.error("격리된 메시지 본문 : {}", message);

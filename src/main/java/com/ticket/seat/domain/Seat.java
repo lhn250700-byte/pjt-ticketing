@@ -1,14 +1,15 @@
 package com.ticket.seat.domain;
 
-import java.time.LocalDateTime;
-
+import com.ticket.global.error.BusinessException;
 import com.ticket.schedule.domain.Schedule;
-
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.http.HttpStatus;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -50,7 +51,8 @@ public class Seat {
 		this.updatedAt = LocalDateTime.now();
 	}
 	
-	public void reservation() {
+	public void reserve() {
+		if (isReserved) throw new BusinessException(HttpStatus.CONFLICT, "이미 예약된 좌석입니다.");
 		this.isReserved = true;
 	}
 	

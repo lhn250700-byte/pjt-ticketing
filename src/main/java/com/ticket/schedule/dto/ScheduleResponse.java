@@ -1,7 +1,6 @@
 package com.ticket.schedule.dto;
 
 import com.ticket.schedule.domain.Schedule;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

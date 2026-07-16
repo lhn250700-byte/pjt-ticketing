@@ -6,7 +6,7 @@
 
 ## Tech Stack
 - **Backend**: Java 17, Spring Boot, Spring Data JPA
-- **Database & Caching**: MySQL, Redis (Lua Script)
+- **Database & Caching**: PostgreSQL, Redis (Lua Script)
 - **Message Queue**: Apache Kafka
 - **Performance Testing**: k6
 

@@ -30,7 +30,7 @@ public class QueueScheduler {
             String activeKey = "concert:queue:active:" + scheduleId;
 
             // 1초에 몇 명씩 통과시킬지 설정 (놀이공원 방식) (= 서버가 감당 가능한 수치)
-            long enterCount = 3_000L;
+            long enterCount = 10L;
 
             // Wait 대기열에서 가장 오래 기다린 상위 10명 추출
             Set<String> waitUsers = redisTemplate.opsForZSet().range(waitKey, 0, enterCount - 1);
